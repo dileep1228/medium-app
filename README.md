@@ -11,3 +11,13 @@ A medium like blogging - app
 - Prisma as the ORM, with connection pooling
 - Postgres as the database
 - jwt for authentication
+
+git commands :
+
+```
+git status
+git add FILENAME
+git commit -m "message"
+git push
+
+```
