@@ -2,7 +2,7 @@
 
 A medium like blogging - app
 
-### We’ll be building medium in the following stack
+#### We’ll be building medium in the following stack
 
 - React in the frontend
 - Cloudflare workers in the backend
