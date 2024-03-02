@@ -29,22 +29,71 @@ blogRouter.use('/*', async (c, next) => {
   await next();
 })
 
-blogRouter.post('/', (c) => {
+blogRouter.post('/', async(c) => {
   console.log(c.get('userId'));
-  return c.text("in post /api/v1/blog");
+  const userId = c.get('userId');
+
+  const prisma = new PrismaClient({
+    datasourceUrl: c.env.DATABASE_URL,
+  }).$extends(withAccelerate())
+
+  const body = await c.req.json();
+  const post = await prisma.post.create({
+    data :{
+      title : body.title,
+      content : body.content,
+      authorId : userId
+    }
+  });
+
+  return c.json({
+    id : post.id
+  });
 })
 
-blogRouter.put('/', (c)=>{
-  return c.text("in put /api/v1/blog");
+blogRouter.put('/', async(c)=>{
+  const userId = c.get('userId');
+  const prisma = new PrismaClient({
+    datasourceUrl: c.env.DATABASE_URL,
+  }).$extends(withAccelerate())
+
+  const body = await c.req.json();
+  const updatePost = await prisma.post.update({
+    where: {
+      id: body.id,
+      authorId: userId
+    },
+    data: {
+      title: body.title,
+      content: body.content
+    }
+  })
+  return c.text("updated post");
 })
 
-blogRouter.get('/:id',(c)=>{
+blogRouter.get('/:id',async(c)=>{
   const id = c.req.param('id');
   console.log(id);
-  return c.text("in get /api/v1/blog/:id");
+  const prisma = new PrismaClient({
+    datasourceUrl: c.env.DATABASE_URL,
+  }).$extends(withAccelerate())
+
+  const content = await prisma.post.findUnique({
+    where: {
+      id: id
+    }
+  })
+  return c.json(content);
 })
 
-blogRouter.get('/bulk',(c)=>{
-  return c.text("in get /api/v1/blog/bulk");
+blogRouter.get('/bulk',async(c)=>{
+
+  const userId = c.get('userId');
+  const prisma = new PrismaClient({
+    datasourceUrl: c.env.DATABASE_URL,
+  }).$extends(withAccelerate())
+
+  const content = await prisma.post.findMany({});
+  return c.json(content);
 })
  
