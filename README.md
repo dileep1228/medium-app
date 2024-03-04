@@ -12,6 +12,11 @@ A medium like blogging - app
 - Postgres as the database
 - jwt for authentication
 
+### created a common file for zod which helps in both front end and backend validation
+
+- added types and type inferences
+- published to npm
+
 git commands :
 
 ```

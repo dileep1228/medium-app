@@ -1,0 +1,17 @@
+{
+  "name": "@dileep1228/medium-app",
+  "version": "1.0.3",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@dileep1228/medium-app": "^1.0.3",
+    "typescript": "^5.3.3",
+    "zod": "^3.22.4"
+  }
+}
