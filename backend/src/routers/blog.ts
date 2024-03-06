@@ -17,16 +17,19 @@ export const blogRouter = new Hono<{
 
 // middleware
 blogRouter.use('/*', async (c, next) => {
-    console.log("in blog middleware");
-  const header =  c.req.header("Authorization")|| "";
-  const token = header.split(" ")[1];
-  const response = await verify(token, c.env.JWT_SECRET);
-  if(!response){
+  const header =  c.req.header("authorization")|| "";
+  try{
+    const response = await verify(header, c.env.JWT_SECRET);
+    c.set('userId', response.id);
+    console.log(response.id);
+    await next();
+  } 
+  catch(e){
+    console.log("error");
     c.status(401);
-    return c.json({ error: "authorization failed" });
+    return c.json({ msg: "authorization failed" });
   }
-  c.set('userId', response.id);
-  await next();
+  
 })
 
 blogRouter.post('/', async(c) => {
@@ -75,10 +78,9 @@ blogRouter.put('/', async(c)=>{
       msg : "inputs not correct"
     })
   }
-  const updatePost = await prisma.post.update({
+  await prisma.post.update({
     where: {
       id: body.id,
-      authorId: userId
     },
     data: {
       title: body.title,
@@ -91,11 +93,12 @@ blogRouter.put('/', async(c)=>{
 blogRouter.get('/:id',async(c)=>{
   const id = c.req.param('id');
   console.log(id);
+  
   const prisma = new PrismaClient({
     datasourceUrl: c.env.DATABASE_URL,
   }).$extends(withAccelerate())
 
-  const content = await prisma.post.findUnique({
+  const content = await prisma.post.findFirst({
     where: {
       id: id
     }
@@ -103,14 +106,29 @@ blogRouter.get('/:id',async(c)=>{
   return c.json(content);
 })
 
-blogRouter.get('/bulk',async(c)=>{
+blogRouter.get('/bulk', async(c) => {
+  console.log("in bulk");
 
-  const userId = c.get('userId');
   const prisma = new PrismaClient({
     datasourceUrl: c.env.DATABASE_URL,
   }).$extends(withAccelerate())
-
-  const content = await prisma.post.findMany({});
-  return c.json(content);
+  
+  const blogs = await prisma.post.findMany({
+      select: {
+          id: true,
+          title: true,
+          content: true,
+          author: {
+              select: {
+                  email: true
+              }
+          }
+      }
+  });
+  console.log(blogs)
+  return c.json({
+      blogs
+  })
 })
- 
+
+
