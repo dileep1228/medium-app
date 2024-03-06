@@ -15,13 +15,15 @@ export const blogRouter = new Hono<{
 }>();
 
 
+
+
 // middleware
-blogRouter.use('/*', async (c, next) => {
+blogRouter.use("/*", async (c, next) => {
   const header =  c.req.header("authorization")|| "";
   try{
     const response = await verify(header, c.env.JWT_SECRET);
     c.set('userId', response.id);
-    console.log(response.id);
+    console.log("in auth");
     await next();
   } 
   catch(e){
@@ -30,6 +32,32 @@ blogRouter.use('/*', async (c, next) => {
     return c.json({ msg: "authorization failed" });
   }
   
+})
+
+
+blogRouter.get('/bulk', async(c) => {
+  console.log("in ......");
+
+  const prisma = new PrismaClient({
+    datasourceUrl: c.env.DATABASE_URL,
+  }).$extends(withAccelerate())
+  
+  const blogs = await prisma.blogs.findMany({
+      select: {
+          id: true,
+          title: true,
+          content: true,
+          author: {
+              select: {
+                  name: true
+              }
+          }
+      }
+  });
+  console.log(blogs)
+  return c.json({
+      blogs
+  })
 })
 
 blogRouter.post('/', async(c) => {
@@ -50,7 +78,7 @@ blogRouter.post('/', async(c) => {
     })
   }
 
-  const post = await prisma.post.create({
+  const post = await prisma.blogs.create({
     data :{
       title : body.title,
       content : body.content,
@@ -78,7 +106,7 @@ blogRouter.put('/', async(c)=>{
       msg : "inputs not correct"
     })
   }
-  await prisma.post.update({
+  await prisma.blogs.update({
     where: {
       id: body.id,
     },
@@ -98,37 +126,24 @@ blogRouter.get('/:id',async(c)=>{
     datasourceUrl: c.env.DATABASE_URL,
   }).$extends(withAccelerate())
 
-  const content = await prisma.post.findFirst({
+  const content = await prisma.blogs.findFirst({
     where: {
       id: id
+    },
+    select: {
+      id: true,
+      title: true,
+      content: true,
+      author: {
+          select: {
+              name: true
+          }
+      }
     }
   })
   return c.json(content);
 })
 
-blogRouter.get('/bulk', async(c) => {
-  console.log("in bulk");
 
-  const prisma = new PrismaClient({
-    datasourceUrl: c.env.DATABASE_URL,
-  }).$extends(withAccelerate())
-  
-  const blogs = await prisma.post.findMany({
-      select: {
-          id: true,
-          title: true,
-          content: true,
-          author: {
-              select: {
-                  email: true
-              }
-          }
-      }
-  });
-  console.log(blogs)
-  return c.json({
-      blogs
-  })
-})
 
 
