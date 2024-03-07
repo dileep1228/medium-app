@@ -19,8 +19,7 @@ A medium like blogging - app
 
 ### try here
 
-https://medium-pcb05ybjp-dileeps-projects-f9f80548.vercel.app/signup
-
+https://medium-app-ashy.vercel.app/signup
 
 git commands :
 
